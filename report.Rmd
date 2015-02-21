@@ -100,6 +100,10 @@ predict_rf <- predict(model_fit,data_cross_val, type = "class")
 c_matrix_rf <- confusionMatrix(predict_rf, data_cross_val$classe)
 c_matrix_rf
 ````
+
+``` {r}
+print(c_matrix_rf)
+```
 Based on the accuracy above our out of sample error is 0.0056. When making predictions against our cross-validation set, the threshold would be = 1. Based on the accuracy and low out of sample error, we can determine that no or few observations will be classified incorrectly. 
 
 We now run our test set against our model and ouput the results to the required text files for submission and validation.

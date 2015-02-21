@@ -153,6 +153,38 @@ c_matrix_rf</code></pre>
 ## Detection Rate         0.2842   0.1925   0.1721   0.1614   0.1833
 ## Detection Prevalence   0.2852   0.1950   0.1746   0.1619   0.1833
 ## Balanced Accuracy      0.9988   0.9958   0.9919   0.9919   0.9986</code></pre>
+<pre class="r"><code>print(c_matrix_rf)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1115    4    0    0    0
+##          B    1  755    9    0    0
+##          C    0    0  675   10    0
+##          D    0    0    0  633    2
+##          E    0    0    0    0  719
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9934          
+##                  95% CI : (0.9903, 0.9957)
+##     No Information Rate : 0.2845          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.9916          
+##  Mcnemar's Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            0.9991   0.9947   0.9868   0.9844   0.9972
+## Specificity            0.9986   0.9968   0.9969   0.9994   1.0000
+## Pos Pred Value         0.9964   0.9869   0.9854   0.9969   1.0000
+## Neg Pred Value         0.9996   0.9987   0.9972   0.9970   0.9994
+## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
+## Detection Rate         0.2842   0.1925   0.1721   0.1614   0.1833
+## Detection Prevalence   0.2852   0.1950   0.1746   0.1619   0.1833
+## Balanced Accuracy      0.9988   0.9958   0.9919   0.9919   0.9986</code></pre>
 <p>Based on the accuracy above our out of sample error is 0.0056. When making predictions against our cross-validation set, the threshold would be = 1. Based on the accuracy and low out of sample error, we can determine that no or few observations will be classified incorrectly.</p>
 <p>We now run our test set against our model and ouput the results to the required text files for submission and validation.</p>
 <pre class="r"><code>#run our test set against our model
