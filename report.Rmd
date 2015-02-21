@@ -1,0 +1,126 @@
+---
+title: "Machine Learning Course Project"
+author: "David J Ruyle"
+date: "February 21, 2015"
+output: html_document
+---
+
+#Background
+"Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement ??? a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). "
+
+#Data
+
+The training data for this project are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The data for this project comes from this original source: http://groupware.les.inf.puc-rio.br/har. If you use the document you create for this class for any purpose please cite them as they have been very generous in allowing their data to be used for this kind of assignment.
+
+Please Note that I the code I use loads the data directly from the URL provided, so that you are not required to download the file to your environment. Please customize the code to your specific needs.
+
+#Project
+
+The goal of your project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. You will also use your prediction model to predict 20 different test cases.
+Your submission should consist of a link to a Github repo with your R markdown and compiled HTML file describing your analysis. Please constrain the text of the writeup to < 2000 words and the number of figures to be less than 5.It will make it easier for the graders if you submit a repo with a gh-pages branch so the HTML page can be viewed online (and you always want to make it easy on graders :-). You should also apply your machine learning algorithm to the 20 test cases available in the test data above. Please submit your predictions in appropriate format to the programming assignment for automated grading. See the programming assignment for additional details.
+
+
+## Loading and Cleaning the Data
+
+Load the required libraries
+
+
+```{r, echo=TRUE}
+library(caret); library(rattle); library(rpart); library(randomForest);
+```
+
+We need to load the data and remove NAs and empty values.
+
+```{r, echo=TRUE}
+pml_train <- read.csv(file = 'pml-training.csv',
+                      na.strings = c('NA','#DIV/0!',''))
+pml_test <- read.csv(file = 'pml-testing.csv',
+                     na.strings = c('NA','#DIV/0!',''))
+```
+
+In exploratory data analysis we discovered that the first seven columns are not numeric. We remove those and loop through the remaining columns (except for our classification column) casting them as numeric.
+
+```{r, echo=TRUE}
+for(i in c(8:ncol(pml_train)-1)) {
+  pml_train[,i] = as.numeric(as.character(pml_train[,i]))
+  pml_test[,i] = as.numeric(as.character(pml_test[,i]))
+}
+```
+We then create a list of our columns with zero or null values to be used each time for our model and predicdtion testing. 
+```{r, echo=TRUE}
+feature_i<- colnames(pml_train)
+feature_i <- colnames(pml_train[colSums(is.na(pml_train)) == 0])
+feature_i <- colnames(pml_train[colSums(is.na(pml_train)) == 0])
+feature_i <- feature_i[-c(1:7)]
+```
+
+## Creating the Model and Testing it.
+
+First set the seed for reproduciblity purposes
+```{r, echo=TRUE}
+set.seed(12345)
+```
+
+Partition the data with 80% for the training sample. The remaining 20% will be used for cross validation
+```{r, echo=TRUE}
+i_train <- createDataPartition(y=pml_train$classe, p=0.80, list=FALSE)
+```
+
+Create the training samples and cross validation samples using only the needed features/columns
+```` {r echo=TRUE}
+data_train <- pml_train[i_train,feature_i]
+data_cross_val <- pml_train[-i_train,feature_i]
+````
+
+Verifiy that each set has the correct number of features/columns
+```` {r echo=TRUE}
+dim(data_train)
+dim(data_cross_val)
+````
+
+We create the model using a random forest
+```` {r echo=TRUE}
+model_fit <- randomForest(classe ~. , data=data_train)
+````
+
+Run the prediction test:
+```` {r echo=TRUE}
+predict_rf <- predict(model_fit,data_cross_val, type = "class")
+````
+
+```` {r echo=TRUE}
+c_matrix_rf <- confusionMatrix(predict_rf, data_cross_val$classe)
+c_matrix_rf
+````
+Based on the accuracy above our out of sample error is 0.0056. When making predictions against our cross-validation set, the threshold would be = 1. Based on the accuracy and low out of sample error, we can determine that no or few observations will be classified incorrectly. 
+
+We now run our test set against our model and ouput the results to the required text files for submission and validation.
+
+```` {r echo=TRUE}
+#run our test set against our model
+final_result <- length(colnames(pml_test[]))
+colnames(pml_test)[final_result] <- 'classe'
+test_model <- predict(model_fit,pml_test[,feature_i])
+test_model
+
+#write to text files for submission of assignment
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+#run write-to function
+pml_write_files(test_model)
+
+````
